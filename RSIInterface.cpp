@@ -750,16 +750,13 @@ namespace RSIInterface{
     float L=(T_d.translation()-T_init.translation()).norm();
     bang_bang_init(L,vc_max,ac_max,Time,Time_s);   
     aa=AngleAxisf(T_init.linear().transpose()*T_d.linear());
-    float theAngle=aa.angle();
-    wrapToPi(theAngle);
-    bang_bang_init(abs(theAngle),va_max,aa_max,Time_a,Time_as);
+    bang_bang_init(abs(aa.angle()),va_max,aa_max,Time_a,Time_as);
     float Time_max=max(Time,Time_a);
     float frac=Time/Time_max, frac_a=Time_a/Time_max;
     bang_bang_calc(L,t*frac,ac_max,Time,Time_s,s,sdot);
     sdot*=frac;
-    bang_bang_calc(abs(theAngle),t*frac_a,aa_max,Time_a,Time_as,st,stdot);
-    st*=sign(theAngle);
-    stdot*=(sign(theAngle)*frac_a);
+    bang_bang_calc(abs(aa.angle()),t*frac_a,aa_max,Time_a,Time_as,st,stdot);
+    stdot*=frac_a;
 
     //float s,sdot;
     //float L=(T_d.translation()-T_init.translation()).norm();
@@ -778,7 +775,7 @@ namespace RSIInterface{
 
     //float st,stdot;
     //aa=AngleAxisf(T_init.linear().transpose()*T_d.linear());
-    //bang_bang(abs(theAngle),t,va_max,aa_max,st,stdot);
+    //bang_bang(abs(aa.angle()),t,va_max,aa_max,st,stdot);
 
     R_des=T_init.linear()*AngleAxisf(st,aa.axis());
     angv_des=T_init.linear()*stdot*aa.axis();
@@ -803,7 +800,6 @@ namespace RSIInterface{
       if(controlMode==JOINT_CONTROL||controlMode==JOINT_PLANNING){
             //q_d(0)=PI/2; q_d(1)=PI/2; q_d(2)=0.f; q_d(3)=0.f; q_d(4)=0.f; q_d(5)=0.f;
             //q_d(0)=PI/2; q_d(1)=PI/2; q_d(2)=0.f; q_d(3)=0.f; q_d(4)=0.f; q_d(5)=PI/2;
-            //q_d(0)=0; q_d(1)=PI/2; q_d(2)=PI/2; q_d(3)=0.f; q_d(4)=-PI/2; q_d(5)=0;
             q_d(0)=0; q_d(1)=PI/2; q_d(2)=PI/2; q_d(3)=0.f; q_d(4)=PI/2; q_d(5)=0;
             return;
       }
@@ -811,9 +807,7 @@ namespace RSIInterface{
       //x_d << 0.f , 0.45f+END_EFF, 1.515f;
       //x_d << 0.45f+END_EFF, 0.f, 1.515f;
       //x_d = x_init;
-      //x_d << -0.1850f , 0, 1.63f+END_EFF;
-      x_d << 0.f, 0.4902f, 1.3948f;
-      
+      x_d << -0.1850f , 0, 1.63f+END_EFF;
 
       if(controlMode==POSITION_CONTROL||controlMode==POSITION_PLANNING)
         return;
@@ -821,14 +815,8 @@ namespace RSIInterface{
       T_d.translation() = x_d;
       //T_d.linear() = (Matrix3f() << 0.f, -1.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f).finished()*T_init.linear();
       //T_d.linear() = (Matrix3f() << 0.f, 0.f, 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f).finished()*T_init.linear();
-      //T_d.linear() << 0.f, 0.f, -1.f, 0.f, -1.f, 0.f, -1.f, 0.f, 0.f;
-      ////T_d.linear() << 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, -1.f, 0.f;
-      float sq=sqrt(0.5);
-      T_d.linear() = (Matrix3f() << -sq, sq, 0.f, 0.5f, 0.5f, sq, 0.5f, 0.5f, -sq).finished();
-      
-      cout << T_init.matrix() << '\n' << endl;
-      cout << T_d.matrix() << '\n' << endl;
-      
+      T_d.linear() << 0.f, 0.f, -1.f, 0.f, -1.f, 0.f, -1.f, 0.f, 0.f;
+
       if(controlMode==AXISANGLE_PLANNING)
         return;
 
